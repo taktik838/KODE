@@ -20,6 +20,12 @@ def get_area_points(id_area):
 
 def assign_courier_to_area(courier_description, id_area):
     db.add_courier(id_area, courier_description)
+    
+def assign_courier_for_delivery(coord_delivery):
+    id_area = get_id_area(coord_delivery)
+    courier = db.get_couriers_by_area(id_area)
+    courier_description = courier[0][2]
+    return id_area, courier_description
 
 def _point_in_area(point, area_points):
     X, Y = point

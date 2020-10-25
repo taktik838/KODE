@@ -23,13 +23,6 @@ def _init_tables(connect):
                     description
                     )''')
 
-    # connect.execute('''CREATE TABLE IF NOT EXISTS order (
-    #                 id INTEGER PRIMARY KEY NOT NULL,
-    #                 status NOT NULL,
-    #                 delivery_coordinate NOT NULL
-    #                 )''')
-
-
 @connect_bd
 def add_area(connect, points):
     connect.execute('INSERT INTO area VALUES(NULL, ?)', [pickle.dumps(points)])
@@ -63,12 +56,23 @@ def add_courier(connect, id_area, description):
     
 @connect_bd
 def get_couriers_by_area(connect, id_area):
-    res = connect.execute('SELECT * FROM courier WHERE id_area=?', [id_area])
+    res = connect.execute('SELECT * FROM courier WHERE id=?', [id_area]).fetchall()
     if res:
         return res
     else:
         if not get_area(id_area):
             raise sqlite3.DataError(f'There are not couriers at this area({id_area})')
         
+@connect_bd
+def get_all_couriers(connect):
+    return connect.execute('SELECT * FROM courier').fetchall()
+
+@connect_bd
+def clear_areas(connect):
+    connect.execute('DELETE FROM area')
+    
+@connect_bd
+def clear_couriers(connect):
+    connect.execute('DELETE FROM courier')
 
 _init_tables()
