@@ -1,6 +1,10 @@
 '''API for managment to area'''
 import db
+import sqlite3.Error
 
+
+class Status400(Exception): pass
+class Status404(Exception): pass
 
 def get_id_area(coor_place):
     '''Return id of area who have coor_place'''
@@ -8,7 +12,7 @@ def get_id_area(coor_place):
     for id_area, points in areas:
         if _point_in_area(coor_place, points):
             return id_area
-    return None
+    raise Status404('Not found area who have this coordinate')
 
 
 def get_all_areas():
@@ -22,6 +26,8 @@ def add_area(points):
     Keyword arguments:
     points -- points of area
     '''
+    if len(points) < 3:
+        raise Status400('Bad points')
     db.add_area(points)
 
 
@@ -31,12 +37,17 @@ def add_areas(area_points):
     Keyword arguments:
     area_points -- list of points of areas
     '''
+    if any(map(lambda points: len(points) < 3, area_points)):
+        raise Status400('Bad points')
     db.add_areas(area_points)
 
 
 def get_area_points(id_area):
     '''Return area(id, points) by id'''
-    return db.get_area(id_area)
+    try:
+        return db.get_area(id_area)
+    except sqlite3.Error as er:
+        raise Status404(str(er))
 
 
 def assign_courier_to_area(courier_description, id_area):
@@ -46,7 +57,10 @@ def assign_courier_to_area(courier_description, id_area):
     courier_description -- info about courier
     id_area -- area will be assigned to courier
     '''
-    db.add_courier(id_area, courier_description)
+    try:
+        db.add_courier(id_area, courier_description)
+    except sqlite3.Error as er:
+        raise Status404(str(er))
 
 
 def assign_courier_for_delivery(coord_delivery):
@@ -55,8 +69,16 @@ def assign_courier_for_delivery(coord_delivery):
     Keyword arguments:
     coord_delivery -- coordinates of place delivery
     '''
-    id_area = get_id_area(coord_delivery)
-    courier = db.get_couriers_by_area(id_area)
+    try:
+        id_area = get_id_area(coord_delivery)
+    except Status400:
+        Status400('No delivery to this place')
+
+    try:
+        courier = db.get_couriers_by_area(id_area)
+    except sqlite3.Error:
+        Status400('Now there is not courier in this area')
+        
     courier_description = courier[0][2]
     return id_area, courier_description
 
