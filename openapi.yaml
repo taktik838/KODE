@@ -1,0 +1,197 @@
+openapi: "3.0.3"
+info:
+  description: "This API can add area, courier and assign courier to order delivery."
+  version: "0.0.1"
+  title: "API for managment delivery area."
+  contact:
+    email: "popernyakoa@gmail.com"
+tags:
+- name: "area"
+  description: "Area is part of all area delivery"
+- name: "courier"
+  description: "Courier delivers orders"
+paths:
+  /delivery_area.get_id_area({coor_place}):
+    get:
+      summary: Get the id area who have coor_place
+      tags: ["area"]
+      parameters:
+      - name: "coor_place"
+        in: "path"
+        schema:
+          type: object
+          properties:
+            x: 
+              type: number
+            y:
+              type: number
+        description: "Coordinates of place"
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+        '400':
+          description: Not found area who have this coordinate
+  /delivery_area.get_all_areas():
+    get:
+      summary: Get the all areas
+      tags: ["area"]
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                    points:
+                      type: array
+                      items: 
+                        type: object
+                        properties:
+                          x: 
+                            type: number
+                          y:
+                            type: number
+  /delivery_area.add_area({points}):
+    post:
+      summary: Adds a new area
+      tags: ["area"]
+      parameters:
+      - name: "points"
+        in: "path"
+        schema:
+          type: array
+          items:
+            type: object
+            properties:
+              x: 
+                type: number
+              y:
+                type: number
+          minLength: 3
+        description: "Coordinate of area"
+        required: true
+      responses:
+        '200':
+          description: OK
+        '400':
+          description: Bad points
+  /delivery_area.add_areas({area_points}):
+    post:
+      summary: Adds a new areas
+      tags: ["area"]
+      description: "Coordinate of area"
+      parameters:
+      - name: "area_points"
+        in: "path"
+        required: true
+        schema:
+          type: array
+          description: array of points of areas
+          items:
+            type: array
+            description: array of points of area
+            minLength: 3
+            items:
+              type: object
+              properties:
+                x: 
+                  type: number
+                y:
+                  type: number
+      responses:
+        '200':
+          description: OK
+        '400':
+          description: Bad points
+  /delivery_area.get_area_points({id_area}):
+    get:
+      summary: Get points of area
+      tags: ["area"]
+      parameters:
+      - name: "id_area"
+        in: "path"
+        required: true
+        schema:
+          type: integer
+          description: ID area
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                  points:
+                    type: array
+                    items: 
+                      type: object
+                      properties:
+                        x: 
+                          type: number
+                        y:
+                          type: number
+        '404':
+          description: Not found area with id=id_area
+  /delivery_area.assign_courier_to_area({courier_description}, {id_area}):
+    post:
+      summary: Assign a new courier to the area
+      tags: ["area", "courier"]
+      parameters:
+      - name: "id_area"
+        in: "path"
+        required: true
+        schema:
+          type: integer
+          description: ID area
+      - name: "courier_description"
+        in: "path"
+        required: true
+        schema:
+          type: string
+          description: Info about the courier
+      responses:
+        '200':
+          description: OK
+        '404':
+          description: Not found area with id=id_area
+  /delivery_area.assign_courier_for_delivery({coord_delivery}):
+    post:
+      summary: Assign courier to delivery
+      tags: ["area", "courier"]
+      parameters:
+      - name: "coord_delivery"
+        in: "path"
+        required: true
+        schema:
+          type: integer
+          description: ID area
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id_area:
+                    type: integer
+                  courier_description:
+                    type: string
+        '400':
+          description: No delivery to this place
